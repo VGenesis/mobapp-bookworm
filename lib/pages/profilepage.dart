@@ -1,25 +1,16 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
     const ProfilePage({super.key});
 
-    @override Widget build(BuildContext context) {
-        return Scaffold(
-                appBar: AppBar(
-                    title: const Text("Appbar"),
-                    centerTitle: true,
-                    ),
-                body: const Column(
-                    
-                    ),
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
-                bottomNavigationBar: BottomNavigationBar(
-                    items: const [
-                    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                    ]
-                    ),
-                );
+class _ProfilePageState extends State<ProfilePage> {
+    @override Widget build(BuildContext context) {
+        return const Center(
+            child: Text("Profile page"),
+        );
     }
 }

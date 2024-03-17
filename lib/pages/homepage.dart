@@ -1,6 +1,7 @@
-import 'package:bookworm/pages/bookpage.dart';
-import 'package:bookworm/pages/profilepage.dart';
 import 'package:flutter/material.dart';
+
+import 'package:bookworm/utility/searchAPI.dart';
+import 'package:bookworm/models/bookModel.dart';
 
 class Homepage extends StatefulWidget {
     const Homepage({super.key});
@@ -10,54 +11,52 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-    int selectedNavPage = 0;
+    final Map<String, dynamic> params = {
+        "q": "a",
+        "limit": "10"
+    };
 
-    void selectPage(int value){
+
+    Sorting sort = Sorting.SORT_POPULAR;
+    bool sortSwitchValue = false;
+
+    List<BookModel> books = [];
+
+    Future<void> fetchNewBooks() async {
+        var api = SearchAPI();
+        api.addParams(params);
+        var responseJson = await api.fetchJSON({"title": "a"});
+
         setState(() {
-                selectedNavPage = value;
-                });
-        if(value == 1){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
-        }
+            for(var book in responseJson["docs"]){
+                BookModel? model = BookModel.fromJSON(book);
+                if(model != null) {
+                    books.add(model);
+                }
+            }
+        });
+    }
+
+    @override void initState(){
+        super.initState();
+        fetchNewBooks();
     }
 
     @override Widget build(BuildContext context) {
-        return Scaffold(
-                appBar: AppBar(
-                    title: const Text("Appbar"),
-                    centerTitle: true,
-                    ),
-
-                body: Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                        const Text("Home Page"),
-                        const SizedBox(height: 20),
-                        GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BookPage())),
-                            child: Container(
-                                width: 200,
-                                height: 80,
-                                color: Colors.green,
-                                child: const Text(
-                                    "Go to Book",
-                                    ),
-                                )
-                            )
-                        ],
+        return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                Expanded(
+                    child: Container(
+                        height: 60,
+                        child: ListView.builder(
+                            itemCount: books.length,
+                            itemBuilder: (context, index) => books[index].buildList() 
+                            ),
                         ),
-                    ),
-
-                bottomNavigationBar: BottomNavigationBar(
-                        currentIndex: selectedNavPage,
-                        onTap: selectPage,
-                        items: const [
-                        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-                        ]
-                        ),
+                    )
+                ]
                 );
     }
 }
+

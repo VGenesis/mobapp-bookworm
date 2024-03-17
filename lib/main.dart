@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bookworm/pages/authorpage.dart';
 import 'package:bookworm/pages/bookpage.dart';
 import 'package:bookworm/pages/categorypage.dart';
-import 'package:bookworm/pages/homepage.dart';
+import 'package:bookworm/pages/mainpage.dart';
 import 'package:bookworm/pages/likedpage.dart';
 import 'package:bookworm/pages/searchpage.dart';
 import 'package:bookworm/pages/profilepage.dart';
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
                 debugShowCheckedModeBanner: false,
                 initialRoute: "/",
                 routes: {
-                    "/" : (context) => const Homepage(), 
+                    "/" : (context) => const Mainpage(),
                     "/category" : (context) => const CategoryPage(),
                     "/book" : (context) => const BookPage(), 
                     "/author" : (context) => const AuthorPage(), 
