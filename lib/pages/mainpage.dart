@@ -29,11 +29,21 @@ class _MainpageState extends State<Mainpage> {
             appBar: AppBar(
                 title: Text(pageNames[selectedNavPage]),
                 centerTitle: true,
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.black87
                 ),
 
-            body: pages[selectedNavPage],
+            body: Container(
+                color: Colors.black,
+                child: pages[selectedNavPage]
+            ),
 
             bottomNavigationBar: BottomNavigationBar(
+                selectedItemColor: Colors.blue[400],
+                //selectedLabelStyle: const TextStyle(color: Colors.white),
+                unselectedItemColor: Colors.white,
+                //unselectedLabelStyle: const TextStyle(color: Colors.white54),
+                backgroundColor: Colors.black87,
                 currentIndex: selectedNavPage,
                 onTap: (value) => {
                 setState(() {

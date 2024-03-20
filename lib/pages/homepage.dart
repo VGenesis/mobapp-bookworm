@@ -27,14 +27,20 @@ class _HomepageState extends State<Homepage> {
         api.addParams(params);
         var responseJson = await api.fetchJSON({"title": "a"});
 
-        setState(() {
-            for(var book in responseJson["docs"]){
-                BookModel? model = BookModel.fromJSON(book);
-                if(model != null) {
+        try{
+            if(mounted) {
+              setState(() {
+                    for(var book in responseJson["docs"]){
+                    BookModel? model = BookModel.fromJSON(book);
+                    if(model != null) {
                     books.add(model);
-                }
+                    }
+                    }
+                    });
             }
-        });
+        } on Exception {
+            print("Fetch disposed");
+        }
     }
 
     @override void initState(){
@@ -44,19 +50,16 @@ class _HomepageState extends State<Homepage> {
 
     @override Widget build(BuildContext context) {
         return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
                 Expanded(
-                    child: Container(
-                        height: 60,
-                        child: ListView.builder(
-                            itemCount: books.length,
-                            itemBuilder: (context, index) => books[index].buildList() 
-                            ),
-                        ),
-                    )
-                ]
-                );
+                    child: ListView.builder(
+                        itemCount: books.length,
+                        itemBuilder: (context, index) => books[index].buildList() 
+                    ),
+                )
+            ]
+        );
     }
 }
 

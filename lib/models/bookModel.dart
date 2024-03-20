@@ -9,6 +9,10 @@ class BookModel{
     final int publishYear;
     //final double rating;
 
+    static const String imgUnavailable = "lib/assets/img-not-found.jpg";
+    static const double cardWidth = 300;
+    static const double cardHeight = 400;
+
     BookModel({
         required this.bookName,
         required this.bookURL,
@@ -18,6 +22,10 @@ class BookModel{
         required this.publishYear,
         //required this.rating
     });
+
+    String getBookUrl(){
+        return "openlibrary.org/works/$bookURL";
+    }
 
     static BookModel? fromJSON(json){
         try{
@@ -44,14 +52,41 @@ class BookModel{
     }
 
     Widget buildGrid(){
-        return GridTile(
-            child: Container(
-              child: Column(
-                  children:[
-                      Text(bookName),
-                      Text(authorName),
-                  ]
-              ),
+        return Card(
+            child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.0),
+                    child: Stack(
+                        children: <Widget>[
+                            Image.asset(imgUnavailable),
+                            Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                    Text(
+                                        bookName,
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color:  Colors.white.computeLuminance() > 0.5 
+                                                    ? Colors.black : Colors.white,
+                                        )
+                                    ),
+                                    Text(
+                                        authorName,
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color:  Colors.white.computeLuminance() > 0.5 
+                                                    ? Colors.black : Colors.white,
+                                        )
+                                    ),
+                                ],
+                            )
+                        ],
+                    ),
+                ),
             )
         );
     }
