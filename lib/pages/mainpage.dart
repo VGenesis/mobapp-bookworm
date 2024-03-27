@@ -11,7 +11,7 @@ class Mainpage extends StatefulWidget {
 }
 
 class _MainpageState extends State<Mainpage> {
-    int selectedNavPage = 0;
+    int selectedNavPage = 1;
     List<Widget > pages = [
         const Homepage(),
         const SearchPage(),
@@ -46,9 +46,9 @@ class _MainpageState extends State<Mainpage> {
                 backgroundColor: Colors.black87,
                 currentIndex: selectedNavPage,
                 onTap: (value) => {
-                setState(() {
+                    setState(() {
                         selectedNavPage = value;
-                        }),
+                    }),
                 },
                 items: [
                     BottomNavigationBarItem(icon: const Icon(Icons.home), label: pageNames[0]),

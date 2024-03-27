@@ -11,54 +11,98 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-    final Map<String, dynamic> params = {
-        "q": "a",
-        "limit": "10"
-    };
-
-
     Sorting sort = Sorting.SORT_POPULAR;
     bool sortSwitchValue = false;
 
-    List<BookModel> books = [];
+    final List<String> categories = [
+        "Popular",
+        "New",
+        "Action",
+        "Drama",
+        "Sci-fi",
+        "Thriller",
+        "Horror",
+        "Psychology",
+        "Science",
+    ];
 
-    Future<void> fetchNewBooks() async {
+    static const defparams = {"title": "a", "ebook_access": "public", "limit": "10"};
+    final List<dynamic> categoryParams = [
+        {},
+        {"sort": "new"},
+        {"subject": "action"},
+        {"subject": "drama"},
+        {"subject": "science fiction"},
+        {"subject": "thriller"},
+        {"subject": "horror"},
+        {"subject": "psychology"},
+        {"subject": "science"},
+    ];
+
+    final List<List<BookModel>> books = [];
+
+    Future<void> fetchBooks(Map<String, dynamic> params, List<BookModel> list) async {
         var api = SearchAPI();
+        api.addParams(defparams);
         api.addParams(params);
-        var responseJson = await api.fetchJSON({"title": "a"});
+        var responseJson = await api.fetchBook({"title": "a"});
 
         try{
             if(mounted) {
-              setState(() {
+                setState(() {
                     for(var book in responseJson["docs"]){
-                    BookModel? model = BookModel.fromJSON(book);
-                    if(model != null) {
-                    books.add(model);
+                        BookModel? model = BookModel.fromJSON(book);
+                        if(model != null) {
+                            list.add(model);
+                        }
                     }
-                    }
-                    });
+                });
             }
-        } on Exception {
-            print("Fetch disposed");
+        } on SearchAPIException catch(e){
+            print(e.message);
         }
     }
 
-    @override void initState(){
+    Widget buildCategory(BuildContext context, String category){
+        return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.0),
+                    color: Colors.white10
+                ),
+                child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                            Text(
+                                category,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+            ),
+        );  
+    }
+
+    @override void initState() {
         super.initState();
-        fetchNewBooks();
+        for(int i = 0; i < categories.length; i++){
+            fetchBooks(categoryParams[i], books[i]);
+        }
     }
 
     @override Widget build(BuildContext context) {
-        return Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-                Expanded(
-                    child: ListView.builder(
-                        itemCount: books.length,
-                        itemBuilder: (context, index) => books[index].buildList() 
-                    ),
-                )
-            ]
+        return const Center(
+            child: Text("Hello")
         );
     }
 }

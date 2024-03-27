@@ -1,12 +1,7 @@
 import 'package:bookworm/models/bookModel.dart';
+import 'package:bookworm/utility/colors.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
-
-class SearchPage extends StatefulWidget {
-    const SearchPage({super.key});
-
-    @override State<SearchPage> createState() => _SearchPageState();
-}
 
 enum QueryState{
     QUERY_INACTIVE,
@@ -14,6 +9,12 @@ enum QueryState{
     QUERY_COMPLETE,
     QUERY_FAILED,
     QUERY_NO_DATA
+}
+
+class SearchPage extends StatefulWidget {
+    const SearchPage({super.key});
+
+    @override State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
@@ -27,58 +28,70 @@ class _SearchPageState extends State<SearchPage> {
 
     List<bool> switches = [true, false, false];
 
-    final List<String> parmeters = [
+    int selectedParameter = 0;
+    final List<String> parameters = [
         "title", "author", "subject"
     ];
-    String selectedParameter = "title";
+
+    final ScrollController _scrollController = ScrollController(
+        onAttach: (position) => {
+            print("scrolling")
+        }
+    );
     final TextEditingController _controller = TextEditingController();
 
-    TextStyle pageTextStyle(double size) {
-        return TextStyle(
-            color: Colors.white,
-            fontSize: size
+    @override Widget build(BuildContext context) {
+        String searchText = "Search ${parameters[selectedParameter]}s";
+        return Column(
+            children: [
+                Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.white12,
+                    ),
+                    child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: TextField(
+                            controller: _controller,
+                            onSubmitted: onFormSubmit,
+                            cursorColor: Colors.white,
+                            decoration: InputDecoration(
+                                icon: const Icon(Icons.search),
+                                labelText: searchText,
+                                filled: true,
+                                hoverColor: cBlack[2],
+                                fillColor: cBlack[3]
+                            ),
+                            style: pageTextStyle(16),
+                        ),
+                    ),
+                ),
+                Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(12), 
+                            bottomRight: Radius.circular(12)
+                        )
+                    ),
+                    child: Row(
+                        children: [
+                            const SizedBox(width: 60),
+                            generateSwitch("Title", 0),
+                            generateSwitch("Author", 1),
+                            generateSwitch("Genre", 2)
+                        ],
+                    ),
+                ),
+                Container(child: generateResults()),
+            ],
         );
     }
 
-    void onFormSubmit(String param) async{
-        if(param.isEmpty) {
-            setState(() { queryState = QueryState.QUERY_INACTIVE; });
-            return;
-        }
-
-        setState(() { queryState = QueryState.QUERY_INCOMPLETE; });
-        Map<String, dynamic> params = {selectedParameter: param};
-
-        try{
-            var api = SearchAPI();
-            var books = await api.fetchJSON(params);
-            if(books.isEmpty){
-                setState(() { queryState = QueryState.QUERY_INCOMPLETE; });
-            } else {
-                for(var book in books["docs"]){
-                    setState(() {
-                        BookModel? model = BookModel.fromJSON(book);
-                        if(model != null) {
-                            bookList.add(model);
-                        }
-                    });
-                }
-                setState(() { queryState = QueryState.QUERY_COMPLETE; });
-            }
-        } on SearchAPIException{
-            print("Error");
-            setState(() { queryState = QueryState.QUERY_NO_DATA; });
-        }
-    }
-
     Widget generateResults(){
-        double bookGridWidth = (MediaQuery.of(context).size.width / BookModel.cardWidth);
         switch(queryState){
             case QueryState.QUERY_INACTIVE:
-                print("Inactive");
                 return const Center();
             case QueryState.QUERY_INCOMPLETE:
-                print("Incomplete");
                 return const Expanded(
                     child: Center(
                         child: Text(
@@ -88,15 +101,21 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                 );
             case QueryState.QUERY_COMPLETE:
-                return Expanded(
-                    child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: bookGridWidth.toInt()),
-                        itemCount: bookList.length,
-                        itemBuilder: (context, index) => bookList[index].buildGrid()
+                return Expanded (
+                    child: NotificationListener(
+                        onNotification: (t) {
+                            if(t is ScrollEndNotification){
+                            }
+                            return true;
+                        },
+                        child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: bookList.length,
+                            itemBuilder: (context, index) => bookList[index].build(context)
+                        ),
                     ),
                 );
             case QueryState.QUERY_FAILED:
-                print("Failed");
                 return const Center(
                         child: Text(
                             "There has been a problem with the server. Please try again later.",
@@ -106,18 +125,8 @@ class _SearchPageState extends State<SearchPage> {
                             )
                         );
             case QueryState.QUERY_NO_DATA:
-                print("No data");
                 return const Center();
         }
-    }
-
-    void onSwitchPressed(int switchIndex){
-        setState(() {
-            selectedParameter = "title";
-            for(int i = 0; i < switches.length; i++){
-                switches[i] = (i == switchIndex);
-            }
-        });
     }
 
     Widget generateSwitch(String text, int switchIndex){
@@ -148,32 +157,51 @@ class _SearchPageState extends State<SearchPage> {
         );
     }
 
-    @override Widget build(BuildContext context) {
-        return Column(
-            children: [
-                Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextField(
-                        controller: _controller,
-                        onSubmitted: onFormSubmit,
-                        cursorColor: Colors.white,
-                        decoration: const InputDecoration(
-                            filled: true,
-                            hoverColor: Colors.black54,
-                            fillColor: Colors.black87
-                        ),
-                        style: pageTextStyle(16),
-                        ),
-                    ),
-                Row(
-                    children: [
-                        generateSwitch("Title", 0),
-                        generateSwitch("Author", 1),
-                        generateSwitch("Genre", 2)
-                    ],
-                ),
-                Container(child: generateResults()),
-            ],
+    void onFormSubmit(String param) async{
+        if(param.isEmpty) {
+            setState(() { queryState = QueryState.QUERY_INACTIVE; });
+            return;
+        }
+
+        setState(() { queryState = QueryState.QUERY_INCOMPLETE; });
+        Map<String, dynamic> params = {parameters[selectedParameter]: param};
+
+        try{
+            bookList.clear();
+            var api = SearchAPI();
+            var books = await api.fetchBook(params);
+            if(books.isEmpty){
+                setState(() { queryState = QueryState.QUERY_INCOMPLETE; });
+            } else {
+                for(var book in books["docs"]){
+                    setState(() {
+                        BookModel? model = BookModel.fromJSON(book);
+                        if(model != null) {
+                            bookList.add(model);
+                        }
+                    });
+                }
+                setState(() { queryState = QueryState.QUERY_COMPLETE; });
+            }
+        } on SearchAPIException{
+            print("Error");
+            setState(() { queryState = QueryState.QUERY_NO_DATA; });
+        }
+    }
+
+    void onSwitchPressed(int switchIndex){
+        setState(() {
+            selectedParameter = switchIndex;
+            for(int i = 0; i < switches.length; i++){
+                switches[i] = (i == switchIndex);
+            }
+        });
+    }
+
+    TextStyle pageTextStyle(double size) {
+        return TextStyle(
+            color: Colors.white,
+            fontSize: size
         );
     }
 }

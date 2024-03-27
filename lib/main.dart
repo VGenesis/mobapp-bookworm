@@ -23,7 +23,6 @@ class MyApp extends StatelessWidget {
                 routes: {
                     "/" : (context) => const Mainpage(),
                     "/category" : (context) => const CategoryPage(),
-                    "/book" : (context) => const BookPage(), 
                     "/author" : (context) => const AuthorPage(), 
                     "/search" : (context) => const SearchPage(), 
                     "/profile" : (context) => const ProfilePage(),
