@@ -1,109 +1,141 @@
 import 'package:flutter/material.dart';
 
+import 'package:bookworm/utility/colors.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:bookworm/models/bookModel.dart';
 
 class Homepage extends StatefulWidget {
-    const Homepage({super.key});
+  const Homepage({super.key});
 
-    @override
-        State<Homepage> createState() => _HomepageState();
+  @override
+    State<Homepage> createState() => _HomepageState();
 }
 
 class _HomepageState extends State<Homepage> {
-    Sorting sort = Sorting.SORT_POPULAR;
-    bool sortSwitchValue = false;
+  bool sortSwitchValue = false;
 
-    final List<String> categories = [
-        "Popular",
-        "New",
-        "Action",
-        "Drama",
-        "Sci-fi",
-        "Thriller",
-        "Horror",
-        "Psychology",
-        "Science",
-    ];
+  ThemeData theme = lightTheme;
 
-    static const defparams = {"title": "a", "ebook_access": "public", "limit": "10"};
-    final List<dynamic> categoryParams = [
-        {},
-        {"sort": "new"},
-        {"subject": "action"},
-        {"subject": "drama"},
-        {"subject": "science fiction"},
-        {"subject": "thriller"},
-        {"subject": "horror"},
-        {"subject": "psychology"},
-        {"subject": "science"},
-    ];
+  final List<String> categories = [
+    "Popular",
+    "New",
+    "Action",
+    "Drama",
+    "Sci-fi",
+    "Thriller",
+    "Horror",
+    "Psychology",
+    "Science",
+  ];
 
-    final List<List<BookModel>> books = [];
+  static const defparams = {"title": "a", "ebook_access": "public", "limit": "5"};
+  final List<Map<String, String>> categoryParams = [
+    {"sort": "popular"},
+    {"sort": "new"},
+    {"subject": "action"},
+    {"subject": "drama"},
+    {"subject": "science fiction"},
+    {"subject": "thriller"},
+    {"subject": "horror"},
+    {"subject": "psychology"},
+    {"subject": "science"},
+  ];
 
-    Future<void> fetchBooks(Map<String, dynamic> params, List<BookModel> list) async {
-        var api = SearchAPI();
-        api.addParams(defparams);
-        api.addParams(params);
-        var responseJson = await api.fetchBook({"title": "a"});
+  Map<String, List<BookModel>> books = {
+    "popular" : [],
+    "new" : [],
+    "action" : [],
+    "drama" : [],
+    "sci-fi" : [],
+    "thriller" : [],
+    "horror" : [],
+    "psychology" : [],
+    "science" : [],
+  };
 
-        try{
-            if(mounted) {
-                setState(() {
-                    for(var book in responseJson["docs"]){
-                        BookModel? model = BookModel.fromJSON(book);
-                        if(model != null) {
-                            list.add(model);
-                        }
-                    }
-                });
+  Future<List<BookModel>> fetchBooks(Map<String, dynamic> params) async {
+    var api = SearchAPI();
+    params.addEntries(defparams.entries);
+    print(params);
+    var responseJson = await api.fetchBook(params);
+
+    try{
+      List<BookModel> bookList = [];
+      if(mounted) {
+        setState(() {
+          for(var book in responseJson["docs"]){
+            BookModel? model = BookModel.fromJSON(book);
+            if(model != null) {
+              bookList.add(model);
             }
-        } on SearchAPIException catch(e){
-            print(e.message);
-        }
+          }
+        });
+      }
+      return bookList;
+    } on SearchAPIException {
+      return [];
     }
+  }
 
-    Widget buildCategory(BuildContext context, String category){
-        return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
+  void loadCategories() async {
+    for(int i = 0; i < categories.length; i++){
+      List<BookModel> categoryBooks = await fetchBooks(categoryParams[i]);
+      if(categoryBooks != []){
+        books.update(categories[i].toLowerCase(), (value) => categoryBooks);
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => loadCategories());
+  }
+
+  @override 
+  Widget build(BuildContext context) {
+    theme = Theme.of(context);
+    return ListView.builder(
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        var categoryBooks = books[categories[index].toLowerCase()]!;
+        return ListTile(
+          title: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
                 width: double.infinity,
-                height: 200,
+                padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12.0),
-                    color: Colors.white10
+                  color: theme.colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12.0)
                 ),
-                child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                            Text(
-                                category,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold
-                                ),
-                            ),
-                        ],
-                    ),
-                ),
-            ),
-        );  
-    }
-
-    @override void initState() {
-        super.initState();
-        for(int i = 0; i < categories.length; i++){
-            fetchBooks(categoryParams[i], books[i]);
-        }
-    }
-
-    @override Widget build(BuildContext context) {
-        return const Center(
-            child: Text("Hello")
+                child: Text(
+                  categories[index],
+                  style: theme.textTheme.titleSmall
+                )
+              ),
+              Row(
+                children: [
+                   ListView.builder(
+                    itemBuilder: (context, index) => const Placeholder()
+                //    scrollDirection: Axis.horizontal,
+                //    itemCount: categoryBooks.length,
+                //    itemBuilder: (context, index) {
+                //      var book = categoryBooks[index];
+                //      return ListTile(
+                //        title: book.build(context)
+                //      );
+                //    }
+                  )
+                ],
+              )
+            ],
+          )
         );
-    }
+      }
+    );
+  }
 }
 

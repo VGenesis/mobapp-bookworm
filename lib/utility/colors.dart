@@ -20,3 +20,46 @@ List<Color> cWhite = [
     Colors.white12,
 ];
 
+ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme(
+        brightness:     Brightness.light,
+        primary:        Colors.blue,
+        onPrimary:      Colors.white,
+        secondary:      Colors.blueAccent,
+        onSecondary:    Colors.white54,
+        error:          Colors.red,
+        onError:        Colors.red[400]!,
+        surface:        Colors.white70,
+        onSurface:      Colors.white54
+    ),
+
+    textTheme: const TextTheme(
+        titleLarge: TextStyle(
+            fontSize: 32,
+            color: Colors.white
+        ),
+
+        titleMedium: TextStyle(
+            fontSize: 20,
+            color: Colors.white
+        ),
+
+        titleSmall: TextStyle(
+            fontSize: 16,
+            color: Colors.white
+        ),
+
+
+        displayMedium: TextStyle(
+            fontSize: 24,
+            color: Colors.black
+        ),
+
+        displaySmall: TextStyle(
+            fontSize: 16,
+            color: Colors.black
+        ),
+    ),
+);
+

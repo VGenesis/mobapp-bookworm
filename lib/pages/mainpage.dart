@@ -1,61 +1,62 @@
+import 'package:flutter/material.dart';
+
 import 'package:bookworm/pages/homepage.dart';
 import 'package:bookworm/pages/profilepage.dart';
 import 'package:bookworm/pages/searchpage.dart';
-import 'package:flutter/material.dart';
 
 class Mainpage extends StatefulWidget {
-    const Mainpage({super.key});
+  const Mainpage({super.key});
 
-    @override
-        State<Mainpage> createState() => _MainpageState();
+  @override
+    State<Mainpage> createState() => _MainpageState();
 }
 
 class _MainpageState extends State<Mainpage> {
-    int selectedNavPage = 1;
-    List<Widget > pages = [
-        const Homepage(),
-        const SearchPage(),
-        const ProfilePage()
-    ];
+  int selectedNavPage = 0;
 
-    static const List<String> pageNames = [
-        "Home",
-        "Search",
-        "Profile"
-    ];
+  List<Widget> pages = [
+    const Homepage(),
+    const SearchPage(),
+    const ProfilePage()
+  ];
 
-    @override Widget build(BuildContext context) {
-        return Scaffold(
-            appBar: AppBar(
-                title: Text(pageNames[selectedNavPage]),
-                centerTitle: true,
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.black87
-                ),
+  static const List<String> pageNames = [
+    "Home",
+    "Search",
+    "Profile"
+  ];
 
-            body: Container(
-                color: Colors.black,
-                child: pages[selectedNavPage]
-            ),
+  @override Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(pageNames[selectedNavPage]),
+        centerTitle: true,
+        foregroundColor:
+        Theme.of(context).textTheme.titleLarge!.color,
+        backgroundColor: Theme.of(context).colorScheme.primary
+      ),
 
-            bottomNavigationBar: BottomNavigationBar(
-                selectedItemColor: Colors.blue[400],
-                //selectedLabelStyle: const TextStyle(color: Colors.white),
-                unselectedItemColor: Colors.white,
-                //unselectedLabelStyle: const TextStyle(color: Colors.white54),
-                backgroundColor: Colors.black87,
-                currentIndex: selectedNavPage,
-                onTap: (value) => {
-                    setState(() {
-                        selectedNavPage = value;
-                    }),
-                },
-                items: [
-                    BottomNavigationBarItem(icon: const Icon(Icons.home), label: pageNames[0]),
-                    BottomNavigationBarItem(icon: const Icon(Icons.search), label: pageNames[1]),
-                    BottomNavigationBarItem(icon: const Icon(Icons.person), label: pageNames[2]),
-                ]
-            ),
-        );
-    }
+      body: Container(
+        color: Theme.of(context).colorScheme.onPrimary,
+        child: pages[selectedNavPage],
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Theme.of(context).colorScheme.onPrimary,
+        unselectedItemColor: Theme.of(context).colorScheme.onSecondary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        currentIndex: selectedNavPage,
+        onTap: (value) => {
+        setState(() {
+            selectedNavPage = value;
+            }),
+        },
+        items: [
+            BottomNavigationBarItem(icon: const Icon(Icons.home), label: pageNames[0]),
+            BottomNavigationBarItem(icon: const Icon(Icons.search), label: pageNames[1]),
+            BottomNavigationBarItem(icon: const Icon(Icons.person), label: pageNames[2]),
+        ]
+      ),
+    );
+  }
 }
