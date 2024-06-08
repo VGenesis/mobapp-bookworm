@@ -35,21 +35,17 @@ class BookModel{
     return "openlibrary.org/works/$bookURL";
   }
 
-  static BookModel? fromJSON(json){
+  static BookModel? fromJSON(Map<String, dynamic> json){
     try{
       var book = BookModel(
-          bookName:       json["title"] as String,
-          bookURL:        json["key"] as String,
-          authorName:     json["author_name"][0] as String,
-          authorURL:      json["author_key"][0] as String,
-          ebookAccess:    json["ebook_access"] as String,
-          publishYear:    (json["first_publish_year"] != null)
-          ? json["first_publish_year"] as int
-          : 1900,
-          coverEditionKey: (json["cover_edition_key"] != null)
-          ? json["cover_edition_key"]
-          : "",
-          ); 
+        bookName:       json["title"] as String,
+        bookURL:        (json.containsKey("key")) ? json["key"] as String : "",
+        authorName:     (json.containsKey("author_name")) ? json["author_name"][0] as String : "Unknown",
+        authorURL:      (json.containsKey("author_key")) ? json["author_key"][0] as String : "Unknown",
+        ebookAccess:    (json.containsKey("ebook_access")) ? json["ebook_access"] as String : "no_ebook",
+        publishYear:    (json.containsKey("first_publish_key")) ? json["first_publish_year"] as int : 1900,
+        coverEditionKey:(json.containsKey("cover_edition_key")) ? json["cover_edition_key"] : "",
+        ); 
       book.oclc = (json["oclc"] != null) ? json["oclc"][0] : "";
       book.isbn = (json["isbn"] != null) ? json["isbn"][0] : "";
       book.fetchCoverImage("L");

@@ -35,8 +35,10 @@ class SearchAPI{
   int statusCode = 200;
   SearchAPI();
 
+
   Future<String> fetch(String query, Map<String, dynamic> params) async{
     Uri uri = Uri.https(domain, query, params);
+    print(uri);
     var response = await http.get(uri);
 
     statusCode = response.statusCode;
@@ -75,7 +77,7 @@ class SearchAPI{
       String query = "book/$editionKey.json";
       var response = await fetch(query, {});
       return json.decode(response);
-    } catch(_) {
+    } catch(e) {
       throw SearchAPIException(
         message: "Failed to fetch reader data",
         statusCode: statusCode
