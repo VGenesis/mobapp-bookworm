@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:bookworm/pages/bookpage.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class BookModel{
   final String bookName;
@@ -15,11 +18,12 @@ class BookModel{
   static const double cardHeight = 300;
 
   String oclc = "", isbn = "";
-  static const String imgUnavailable = "lib/assets/img-not-found.jpg";
+  static const String imgUnavailable = "lib/assets/img-not-found.png";
 
   bool imgAvailable = true;
   String imgSrc = imgUnavailable;
   Image image = Image.asset(imgUnavailable);
+  bool hasImage = false;
 
   BookModel({
       required this.bookName,
@@ -63,14 +67,18 @@ class BookModel{
         SearchAPI api = SearchAPI();
         var imageBytes = await api.fetchCover("isbn", isbn);
         if(api.statusCode == 200){
-          image = (imageBytes.length < 100)
-            ? Image.asset(
-                imgUnavailable,
-                fit: BoxFit.contain
-                ) : Image.memory(
-                  imageBytes,
-                  fit: BoxFit.contain
-                  );
+          if(imageBytes.length < 100){
+            image = Image.asset(
+              imgUnavailable,
+              fit: BoxFit.contain
+            );
+          } else {
+            image = Image.memory(
+              imageBytes,
+              fit: BoxFit.contain
+            );
+            hasImage = true;
+          }
         }else {
           image = Image.asset(
               imgUnavailable,

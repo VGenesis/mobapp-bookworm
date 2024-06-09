@@ -65,6 +65,18 @@ class SearchAPI{
       Uri uri = Uri.https(coverDomain, query);
 
       var response = await http.get(uri);
+      if(response.bodyBytes.length < 100){
+        String query = "b/$type/$id-L.jpg";
+        Uri uri = Uri.https(coverDomain, query);
+        response = await http.get(uri);
+        
+        if(response.bodyBytes.length < 100){
+          String query = "b/$type/$id-L.jpg";
+          Uri uri = Uri.https(coverDomain, query);
+          response = await http.get(uri);
+
+        }
+      }
       statusCode = response.statusCode;
       return response.bodyBytes;
     } on Exception catch(_) {

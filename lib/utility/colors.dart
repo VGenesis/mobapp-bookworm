@@ -30,7 +30,7 @@ ThemeData lightTheme = ThemeData(
         onSecondary:    Colors.white54,
         error:          Colors.red,
         onError:        Colors.red[400]!,
-        surface:        Colors.white70,
+        surface:        Colors.blueGrey,
         onSurface:      Colors.white54
     ),
 
