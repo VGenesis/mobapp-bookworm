@@ -1,23 +1,54 @@
-import 'dart:ui';
+import 'dart:isolate';
 
-import 'package:bookworm/pages/bookpage.dart';
+import 'package:bookworm/pages/bookreader.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
+void fetchCover(List<dynamic> args) async {
+  SendPort sendPort = args[0];
+  String isbn = args[1];
+  bool imgAvailable = args[2];
+  String imgUnavailable = args[3];
+
+  final Image image;
+  bool hasImage = false;
+  if(imgAvailable) {
+    try{
+      SearchAPI api = SearchAPI();
+      var imageBytes = await api.fetchCover("isbn", isbn);
+      if(api.statusCode == 200){
+        if(imageBytes.length < 100){
+          image = Image.asset(imgUnavailable, fit: BoxFit.contain);
+        } else {
+          image = Image.memory(imageBytes, fit: BoxFit.contain);
+          hasImage = true;
+        }
+      }else {
+        image = Image.asset(imgUnavailable, fit: BoxFit.contain);
+      }
+      sendPort.send([image, hasImage]);
+    } on SearchAPIException catch(_){
+      sendPort.send([null]);
+      return;
+    }
+  }
+}
 
 class BookModel{
   final String bookName;
   final String bookURL;
+  final String summary;
   final String authorName;
   final String authorURL;
   final String ebookAccess;
   final int publishYear;
   final String? coverEditionKey;
+  final String oclc;
+  final String isbn;
 
   static const double cardWidth = 200;
   static const double cardHeight = 300;
 
-  String oclc = "", isbn = "";
   static const String imgUnavailable = "lib/assets/img-not-found.png";
 
   bool imgAvailable = true;
@@ -28,10 +59,13 @@ class BookModel{
   BookModel({
       required this.bookName,
       required this.bookURL,
+      required this.summary,
       required this.authorName,
       required this.authorURL,
       required this.ebookAccess,
       required this.publishYear,
+      required this.oclc,
+      required this.isbn,
       this.coverEditionKey
       });
 
@@ -44,52 +78,42 @@ class BookModel{
       var book = BookModel(
         bookName:       json["title"] as String,
         bookURL:        (json.containsKey("key")) ? json["key"] as String : "",
+        summary:        (json.containsKey("first_sentence")) ? json["first_sentence"][0] as String : "No summary found",
         authorName:     (json.containsKey("author_name")) ? json["author_name"][0] as String : "Unknown",
         authorURL:      (json.containsKey("author_key")) ? json["author_key"][0] as String : "Unknown",
         ebookAccess:    (json.containsKey("ebook_access")) ? json["ebook_access"] as String : "no_ebook",
         publishYear:    (json.containsKey("first_publish_key")) ? json["first_publish_year"] as int : 1900,
         coverEditionKey:(json.containsKey("cover_edition_key")) ? json["cover_edition_key"] : "",
+        oclc: (json["oclc"] != null) ? json["oclc"][0] : "",
+        isbn: (json["isbn"] != null) ? json["isbn"][0] : "",
         ); 
-      book.oclc = (json["oclc"] != null) ? json["oclc"][0] : "";
-      book.isbn = (json["isbn"] != null) ? json["isbn"][0] : "";
-      book.fetchCoverImage("L");
+
+      book.fetchCoverImage();
       return book;
     } on Exception {
       return null;
     }
   }
 
-  void fetchCoverImage(String size) async{
+  void fetchCoverImage() async{
     if(isbn.isEmpty && oclc.isEmpty) return;
 
-    if(imgAvailable) {
-      try{
-        SearchAPI api = SearchAPI();
-        var imageBytes = await api.fetchCover("isbn", isbn);
-        if(api.statusCode == 200){
-          if(imageBytes.length < 100){
-            image = Image.asset(
-              imgUnavailable,
-              fit: BoxFit.contain
-            );
-          } else {
-            image = Image.memory(
-              imageBytes,
-              fit: BoxFit.contain
-            );
-            hasImage = true;
-          }
-        }else {
-          image = Image.asset(
-              imgUnavailable,
-              fit: BoxFit.contain
-              );
-        }
-      } on SearchAPIException catch(_){
-        image = Image.asset(imgUnavailable);
-        return;
+    final receivePort = ReceivePort();
+    var iso = await Isolate.spawn(
+      fetchCover, 
+      [receivePort.sendPort, isbn, imgAvailable, imgUnavailable]
+    );
+    receivePort.listen((data) {
+      if(data[0] == null){
+        image = Image.asset(imgUnavailable, fit: BoxFit.contain);
       }
-    }
+      else {
+        image = data[0];
+        hasImage = data[1];
+      }
+      receivePort.close();
+      iso.kill();
+    });
   }
 
   Widget build(BuildContext context){
@@ -99,12 +123,12 @@ class BookModel{
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookPage(book: this)
+              builder: (context) => BookReader(book: this)
             )
           );
         },
         tileColor: theme.colorScheme.primary,
-        hoverColor: theme.colorScheme.primary,
+         hoverColor: theme.colorScheme.primary,
         title: Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.primary,
