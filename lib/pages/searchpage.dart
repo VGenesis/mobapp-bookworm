@@ -1,9 +1,10 @@
+import 'package:bookworm/utility/colors.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bookworm/models/bookModel.dart';
-import 'package:bookworm/utility/colors.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
 
 enum QueryState{ inactive, started, finished, failed, empty }
 
@@ -36,7 +37,6 @@ class _SearchPageState extends State<SearchPage> {
     final ScrollController _scrollController = ScrollController();
     final TextEditingController _controller = TextEditingController();
 
-    ThemeData theme = lightTheme;
     double searchBarOpacity = 1.0;
 
     @override
@@ -53,141 +53,143 @@ class _SearchPageState extends State<SearchPage> {
         }
 
     @override Widget build(BuildContext context) {
-        String searchText = "Search ${parameterNames[selectedParameter]}";
-        theme = Theme.of(context);
-        return Container(
-                decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface
+      String searchText = "Search ${parameterNames[selectedParameter]}";
+      return Consumer<PageTheme>(
+        builder: (context, currentTheme, child) => Container(
+          decoration: BoxDecoration(
+            color: currentTheme.theme.colorScheme.primary
+          ),
+          child: Stack(
+            children: [
+            generateResults(),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 100),
+              opacity: searchBarOpacity,
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: currentTheme.theme.colorScheme.secondary
+                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: 10.0, bottom: 5.0,
+                        left: 20.0, right: 20.0
+                        ),
+                      child: TextField(
+                        controller: _controller,
+                        onSubmitted: onFormSubmit,
+                        decoration: InputDecoration(
+                          icon: const Icon(Icons.search),
+                          iconColor: currentTheme.theme.colorScheme.onPrimary,
+                          labelText: searchText,
+                          labelStyle: TextStyle(
+                              color: currentTheme.theme.colorScheme.secondary
+                              ),
+                          filled: true,
+                          hoverColor: currentTheme.theme.colorScheme.secondary,
+                          fillColor: currentTheme.theme.colorScheme.onPrimary,
+                          focusColor: currentTheme.theme.colorScheme.secondary
+                          ),
+                        style: TextStyle(
+                          color: currentTheme.theme.colorScheme.primary,
+                          fontSize: currentTheme.theme.textTheme.displaySmall!.fontSize
+                          )
+                        ),
+                      ),
                     ),
-                child: Stack(
-                    children: [
-                    generateResults(),
-                    AnimatedOpacity(
-                        duration: const Duration(milliseconds: 100),
-                        opacity: searchBarOpacity,
-                        child: Column(
-                            children: [
-                            Container(
-                                decoration: BoxDecoration(
-                                    color: theme.colorScheme.secondary
-                                    ),
-                                child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 10.0, bottom: 5.0,
-                                        left: 20.0, right: 20.0
-                                        ),
-                                    child: TextField(
-                                        controller: _controller,
-                                        onSubmitted: onFormSubmit,
-                                        decoration: InputDecoration(
-                                            icon: const Icon(Icons.search),
-                                            iconColor: theme.colorScheme.onPrimary,
-                                            labelText: searchText,
-                                            labelStyle: TextStyle(
-                                                color: theme.colorScheme.secondary
-                                                ),
-                                            filled: true,
-                                            hoverColor: theme.colorScheme.secondary,
-                                            fillColor: theme.colorScheme.onPrimary,
-                                            focusColor: theme.colorScheme.secondary
-                                            ),
-                                        style: TextStyle(
-                                            color: theme.colorScheme.primary,
-                                            fontSize: theme.textTheme.displaySmall!.fontSize
-                                            )
-                                        ),
-                                    ),
-                                    ),
-
-                                    Container(
-                                            decoration: BoxDecoration(
-                                                color: theme.colorScheme.secondary,
-                                                borderRadius: const BorderRadius.only(
-                                                    bottomLeft: Radius.circular(12), 
-                                                    bottomRight: Radius.circular(12)
-                                                    )
-                                                ),
-                                            child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                generateSwitch("Title", 0),
-                                                generateSwitch("Author", 1),
-                                                generateSwitch("Genre", 2)
-                                                ],
-                                                ),
-                                            ),
-                                    ]
-                                        )
-                                        ),
-                                    ],
-                                    ),
-                                    );
+        
+                    Container(
+                      decoration: BoxDecoration(
+                        color: currentTheme.theme.colorScheme.secondary,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(12), 
+                          bottomRight: Radius.circular(12)
+                          )
+                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          generateSwitch("Title", 0),
+                          generateSwitch("Author", 1),
+                          generateSwitch("Genre", 2)
+                        ],
+                      ),
+                    ),
+                  ]
+                )
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     Widget generateResults(){
-        switch(queryState){
+      return Consumer<PageTheme>(
+        builder: (context, currentTheme, child) {
+          switch(queryState){
             case QueryState.inactive:
-                return const Center();
+              return const Center();
             case QueryState.started:
-                return Expanded(
-                        child: Center(
-                            child: Text(
-                                "Searching...",
-                                style: theme.textTheme.displaySmall
-                                ),
-                            ),
-                        );
+              return Expanded(
+                child: Center(
+                  child: Text(
+                    "Searching...",
+                    style: currentTheme.theme.textTheme.displaySmall
+                    ),
+                  ),
+                );
             case QueryState.finished:
-                return Expanded (
-                        child: ListView.builder(
-                            controller: _scrollController,
-                            itemCount: bookList.length,
-                            itemBuilder: (context, index) => bookList[index].build(context)
-                            ),
-                        );
+              return Expanded (
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: bookList.length,
+                  itemBuilder: (context, index) => bookList[index].build(context)
+                  ),
+                );
             case QueryState.failed:
-                return Expanded(
-                        child: Center(
-                            child: Text(
-                                "There has been a problem with the server. Please try again later.",
-                                style: theme.textTheme.displaySmall
-                                )
-                            ),
-                        );
+              return Expanded(
+                child: Center(
+                  child: Text(
+                    "There has been a problem with the server. Please try again later.",
+                    style: currentTheme.theme.textTheme.displaySmall
+                    )
+                  ),
+                );
             case QueryState.empty:
-                return Center(
-                        child: Text(
-                            "No books found.",
-                            style: theme.textTheme.displaySmall
-                            ),
-                        );
+              return Center(
+                child: Text(
+                  "No books found.",
+                  style: currentTheme.theme.textTheme.displaySmall
+                ),
+              );
+            }
         }
+      );
     }
 
     Widget generateSwitch(String text, int switchIndex){
-        return ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                        Switch.adaptive(
-                            activeTrackColor: theme.colorScheme.surface,
-                            inactiveTrackColor: theme.colorScheme.onSurface,
-                            inactiveThumbColor: theme.colorScheme.surface,
-                            focusColor: theme.colorScheme.surface,
-                            value: switches[switchIndex],
-                            onChanged: (value) => onSwitchPressed(switchIndex)
-                            ),
-                        Text(
-                            text,
-                            style: Theme.of(context).textTheme.titleSmall
-                            ),
-                        ],
-                        ),
-                    ),
-                );
+      return Padding(
+        padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+        child: Consumer<PageTheme>(
+          builder: (context, currentTheme, child) => Column(
+            children: [
+              SwitchTheme(
+                data: currentTheme.theme.switchTheme,
+                child: Switch(
+                  value: switches[switchIndex],
+                  onChanged: (_) => onSwitchPressed(switchIndex)
+                ),
+              ),
+              Text(
+                text,
+                style: currentTheme.theme.textTheme.titleSmall,
+              )
+            ],
+          ),
+        ),
+      );
     }
 
     void onFormSubmit(String param) async{

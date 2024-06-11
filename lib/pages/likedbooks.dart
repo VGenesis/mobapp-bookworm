@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:bookworm/models/bookModel.dart';
@@ -13,6 +12,14 @@ class LikedBooks{
 
   static bool contains(BookModel model){
     return likedBooks.contains(model);
+  }
+
+  static int count(){
+    return likedBooks.length;
+  }
+
+  static BookModel get(int index){
+    return likedBooks[index];
   }
 
   static void removeBook(BookModel model){
@@ -42,3 +49,4 @@ class LikedBooks{
     }
   }
 }
+

@@ -5,6 +5,7 @@ import 'package:bookworm/pages/bookpage.dart';
 import 'package:bookworm/utility/colors.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum HomepageLoadState{ loading, finished, failed }
 
@@ -40,8 +41,6 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   HomepageLoadState state = HomepageLoadState.loading;
   bool sortSwitchValue = false;
-
-  ThemeData theme = lightTheme;
 
   final List<String> categories = [
     "Popular",
@@ -134,122 +133,128 @@ class _HomepageState extends State<Homepage> {
   Widget generatePage(){
     switch(state){
       case HomepageLoadState.loading:
-        return Center(
-          child: Text(
-            "Loading...",
-            style: theme.textTheme.displaySmall
-          )
+        return Consumer<PageTheme>(
+          builder: (context, currentTheme, child) => Center(
+            child: Text(
+              "Loading...",
+              style: currentTheme.theme.textTheme.displaySmall
+            )
+          ),
         );
       case HomepageLoadState.finished:
         return ListView.builder(
           itemCount: categories.length,
           itemBuilder: (context, index) {
             var categoryBooks = books[categories[index].toLowerCase()]!;
-            return ListTile(
-              title: Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12.0)
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(12.0)
+            return Consumer<PageTheme>(
+              builder: (context, currentTheme, child) => ListTile(
+                title: Container(
+                  decoration: BoxDecoration(
+                    color: Color.lerp(Colors.white, currentTheme.theme.colorScheme.primary, 0.5),
+                    borderRadius: BorderRadius.circular(12.0)
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: currentTheme.theme.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(12.0)
+                        ),
+                        child: Text(
+                          categories[index],
+                          style: currentTheme.theme.textTheme.titleSmall
+                        )
                       ),
-                      child: Text(
-                        categories[index],
-                        style: theme.textTheme.titleSmall
-                      )
-                    ),
-                
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 200,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: categoryBooks.length,
-                              itemBuilder: (context, index) {
-                                BookModel book = categoryBooks[index];
-                                return GestureDetector(
-                                  onTapUp: (details){
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(builder: 
-                                        (context) => BookPage(book: book)
-                                      )
-                                    );
-                                  },
-                                  child: Container(
-                                    height: 200,
-                                    constraints: const BoxConstraints(maxWidth: 150),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: (book.hasImage)
-                                        ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(12.0),
-                                          child: book.image
+                  
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 200,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: categoryBooks.length,
+                                itemBuilder: (context, index) {
+                                  BookModel book = categoryBooks[index];
+                                  return GestureDetector(
+                                    onTapUp: (details){
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(builder: 
+                                          (context) => BookPage(book: book)
                                         )
-                                      
-                                        : Stack(
-                                          alignment: Alignment.center,
-                                            children: [
-                                              book.image,
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      book.authorName,
-                                                      maxLines: 2,
-                                                      textAlign: TextAlign.center,
-                                                      style: theme.textTheme.displaySmall,
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      book.bookName,
-                                                      maxLines: 2,
-                                                      textAlign: TextAlign.center,
-                                                      style: theme.textTheme.displaySmall,
-                                                    ),
-                                                  )
-                                                ]
-                                              )
-                                            ],
-                                          )
+                                      );
+                                    },
+                                    child: Container(
+                                      height: 200,
+                                      constraints: const BoxConstraints(maxWidth: 150),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12.0),
                                       ),
-                                  ),
-                                );
-                              }
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: (book.hasImage)
+                                          ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            child: book.image
+                                          )
+                                        
+                                          : Stack(
+                                            alignment: Alignment.center,
+                                              children: [
+                                                book.image,
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: Text(
+                                                        book.authorName,
+                                                        maxLines: 2,
+                                                        textAlign: TextAlign.center,
+                                                        style: currentTheme.theme.textTheme.displaySmall,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: Text(
+                                                        book.bookName,
+                                                        maxLines: 2,
+                                                        textAlign: TextAlign.center,
+                                                        style: currentTheme.theme.textTheme.displaySmall,
+                                                      ),
+                                                    )
+                                                  ]
+                                                )
+                                              ],
+                                            )
+                                        ),
+                                    ),
+                                  );
+                                }
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              )
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              ),
             );
           }
         );
       case HomepageLoadState.failed:
         return Center(
-          child: Text(
-            "Failed to load page.",
-            style: theme.textTheme.displaySmall
+          child: Consumer<PageTheme>(
+            builder: (context, currentTheme, child) => Text(
+              "Failed to load page.",
+              style: currentTheme.theme.textTheme.displaySmall
+            ),
           )
         );
     }
@@ -263,7 +268,6 @@ class _HomepageState extends State<Homepage> {
 
   @override 
   Widget build(BuildContext context) {
-    theme = Theme.of(context);
     return generatePage();
   }
 }

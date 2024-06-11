@@ -1,11 +1,16 @@
-import 'package:bookworm/pages/splashscreen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:bookworm/pages/splashscreen.dart';
 import 'package:bookworm/utility/colors.dart';
-import 'package:bookworm/pages/mainpage.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider<PageTheme>(
+      create: (context) => PageTheme(),
+      child: const MyApp(),
+    )
+  );
 }
 
 class MyApp extends StatefulWidget {
