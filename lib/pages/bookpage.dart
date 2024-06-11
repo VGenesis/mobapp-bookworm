@@ -22,6 +22,7 @@ class _BookPageState extends State<BookPage> {
 
   bool liked = false;
 
+  @override
   void initState(){
     super.initState();
     liked = LikedBooks.contains(widget.book);
@@ -43,6 +44,7 @@ class _BookPageState extends State<BookPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: theme.colorScheme.onPrimary,
         backgroundColor: theme.colorScheme.primary,
       ),
       body: Container(

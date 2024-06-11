@@ -1,38 +1,6 @@
-import 'dart:isolate';
-
 import 'package:bookworm/pages/bookreader.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
-
-void fetchCover(List<dynamic> args) async {
-  SendPort sendPort = args[0];
-  String isbn = args[1];
-  bool imgAvailable = args[2];
-  String imgUnavailable = args[3];
-
-  final Image image;
-  bool hasImage = false;
-  if(imgAvailable) {
-    try{
-      SearchAPI api = SearchAPI();
-      var imageBytes = await api.fetchCover("isbn", isbn);
-      if(api.statusCode == 200){
-        if(imageBytes.length < 100){
-          image = Image.asset(imgUnavailable, fit: BoxFit.contain);
-        } else {
-          image = Image.memory(imageBytes, fit: BoxFit.contain);
-          hasImage = true;
-        }
-      }else {
-        image = Image.asset(imgUnavailable, fit: BoxFit.contain);
-      }
-      sendPort.send([image, hasImage]);
-    } on SearchAPIException catch(_){
-      sendPort.send([null]);
-      return;
-    }
-  }
-}
 
 class BookModel{
   final String bookName;
@@ -57,17 +25,17 @@ class BookModel{
   bool hasImage = false;
 
   BookModel({
-      required this.bookName,
-      required this.bookURL,
-      required this.summary,
-      required this.authorName,
-      required this.authorURL,
-      required this.ebookAccess,
-      required this.publishYear,
-      required this.oclc,
-      required this.isbn,
-      this.coverEditionKey
-      });
+    required this.bookName,
+    required this.bookURL,
+    required this.summary,
+    required this.authorName,
+    required this.authorURL,
+    required this.ebookAccess,
+    required this.publishYear,
+    required this.oclc,
+    required this.isbn,
+    this.coverEditionKey
+  });
 
   String getBookUrl(){
     return "openlibrary.org/works/$bookURL";
@@ -98,22 +66,22 @@ class BookModel{
   void fetchCoverImage() async{
     if(isbn.isEmpty && oclc.isEmpty) return;
 
-    final receivePort = ReceivePort();
-    var iso = await Isolate.spawn(
-      fetchCover, 
-      [receivePort.sendPort, isbn, imgAvailable, imgUnavailable]
-    );
-    receivePort.listen((data) {
-      if(data[0] == null){
-        image = Image.asset(imgUnavailable, fit: BoxFit.contain);
+    if(imgAvailable) {
+      try{
+        SearchAPI api = SearchAPI();
+        var imageBytes = await api.fetchCover("isbn", isbn);
+        if(api.statusCode == 200){
+          if(imageBytes.length < 100){
+            image = Image.asset(imgUnavailable, fit: BoxFit.contain);
+          } else {
+            image = Image.memory(imageBytes, fit: BoxFit.contain);
+            hasImage = true;
+          }
+        }
+      } on SearchAPIException catch(_){
+        return;
       }
-      else {
-        image = data[0];
-        hasImage = data[1];
-      }
-      receivePort.close();
-      iso.kill();
-    });
+    }
   }
 
   Widget build(BuildContext context){

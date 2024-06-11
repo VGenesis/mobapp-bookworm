@@ -1,4 +1,4 @@
-import 'package:bookworm/pages/bookpage.dart';
+import 'package:bookworm/pages/splashscreen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bookworm/utility/colors.dart';
@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       initialRoute: "/",
       theme: theme,
-      home: const Mainpage()
+      home: const SplashScreen()
     );
   }
 }
