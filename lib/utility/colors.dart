@@ -27,14 +27,14 @@ ThemeData lightTheme = ThemeData(
     brightness:     Brightness.light,
     primary:        Colors.blue,
     onPrimary:      Colors.white,
-    secondary:      Colors.blueAccent,
-    onSecondary:    Colors.white54,
-    tertiary:       Colors.red,
+    secondary:      Colors.blue[400]!,
+    onSecondary:    Colors.white,
+    tertiary:       Colors.blue[200]!,
     onTertiary:     Colors.white,
     error:          Colors.red,
-    onError:        Colors.red[400]!,
-    surface:        Colors.blueGrey,
-    onSurface:      Colors.white54
+    onError:        Colors.white,
+    surface:        Colors.white,
+    onSurface:      Colors.blue,
     ),
 
   textTheme: const TextTheme(
@@ -66,14 +66,15 @@ ThemeData lightTheme = ThemeData(
 
   switchTheme:  SwitchThemeData(
     thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> states){
-      return Colors.blue;
+      return Colors.white;
     }),
     trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> states){
       if(states.contains(WidgetState.pressed)) {
-        return Colors.white;
+        return Colors.blue[200];
       }
-      return Colors.grey;
+      return Colors.blue[700];
     }),
+    thumbIcon: WidgetStateProperty.all(const Icon(null)),
     trackOutlineColor: WidgetStateProperty.resolveWith((Set<WidgetState> states){
       return Colors.white;
     }),
@@ -84,55 +85,55 @@ ThemeData lightTheme = ThemeData(
 ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   colorScheme: ColorScheme(
-    brightness:     Brightness.dark,
-    primary:        Colors.black54,
-    onPrimary:      Colors.black,
-    secondary:      Colors.black54,
-    onSecondary:    Colors.black,
-    tertiary:       Colors.red,
+    brightness:     Brightness.light,
+    primary:        Color.alphaBlend(Colors.black87, Colors.white),
+    onPrimary:      Colors.white,
+    secondary:      Color.alphaBlend(Colors.black87, Colors.white),
+    onSecondary:    Colors.white,
+    tertiary:       Color.alphaBlend(Colors.black54, Colors.white),
     onTertiary:     Colors.white,
     error:          Colors.red,
     onError:        Colors.red[400]!,
-    surface:        Colors.grey,
+    surface:        Colors.black,
     onSurface:      Colors.white
   ),
 
   textTheme: const TextTheme(
     titleLarge: TextStyle(
       fontSize: 32,
-      color: Colors.black
+      color: Colors.white
     ),
 
     titleMedium: TextStyle(
       fontSize: 20,
-      color: Colors.black
+      color: Colors.white
     ),
 
     titleSmall: TextStyle(
       fontSize: 16,
-      color: Colors.black
+      color: Colors.white
     ),
 
     displayMedium: TextStyle(
       fontSize: 24,
-      color: Colors.white
+      color: Colors.black
     ),
 
     displaySmall: TextStyle(
       fontSize: 16,
-      color: Colors.white
+      color: Colors.black
     ),
   ),
 
   switchTheme:  SwitchThemeData(
     thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> states){
-      return Colors.orange;
+      return Colors.white;
     }),
     trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> states){
       if(states.contains(WidgetState.pressed)) {
         return Colors.black;
       }
-      return Colors.grey;
+      return Colors.black38;
     }),
     trackOutlineColor: WidgetStateProperty.resolveWith((Set<WidgetState> states){
       return Colors.black;

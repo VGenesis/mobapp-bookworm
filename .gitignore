@@ -46,3 +46,4 @@ macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Flutter/GeneratedPluginRegistrant.swift
 flutter_jank_metrics_04.json
 *.swift
+*.json

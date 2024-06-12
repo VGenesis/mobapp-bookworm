@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bookworm/pages/bookreader.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +11,6 @@ class BookModel{
   final String authorName;
   final String authorURL;
   final String ebookAccess;
-  final int publishYear;
   final String? coverEditionKey;
   final String oclc;
   final String isbn;
@@ -31,7 +32,6 @@ class BookModel{
     required this.authorName,
     required this.authorURL,
     required this.ebookAccess,
-    required this.publishYear,
     required this.oclc,
     required this.isbn,
     this.coverEditionKey
@@ -50,10 +50,9 @@ class BookModel{
         authorName:     (json.containsKey("author_name")) ? json["author_name"][0] as String : "Unknown",
         authorURL:      (json.containsKey("author_key")) ? json["author_key"][0] as String : "Unknown",
         ebookAccess:    (json.containsKey("ebook_access")) ? json["ebook_access"] as String : "no_ebook",
-        publishYear:    (json.containsKey("first_publish_key")) ? json["first_publish_year"] as int : 1900,
         coverEditionKey:(json.containsKey("cover_edition_key")) ? json["cover_edition_key"] : "",
-        oclc: (json["oclc"] != null) ? json["oclc"][0] : "",
-        isbn: (json["isbn"] != null) ? json["isbn"][0] : "",
+        oclc: json.containsKey("oclc")? ["oclc"][0] : "",
+        isbn: json.containsKey("isbn")? ["isbn"][0] : "",
         ); 
 
       book.fetchCoverImage();
@@ -61,6 +60,20 @@ class BookModel{
     } on Exception {
       return null;
     }
+  }
+
+  Map<String, dynamic> toJSON(){
+    return {
+      "title": bookName,
+      "key": bookURL,
+      "first_sentence": summary,
+      "author_name": authorName,
+      "author_key": authorURL,
+      "ebook_access": ebookAccess,
+      "cover_edition_key": coverEditionKey,
+      "oclc": jsonEncode([oclc]),
+      "isbn": jsonEncode([isbn])
+    };
   }
 
   void fetchCoverImage() async{

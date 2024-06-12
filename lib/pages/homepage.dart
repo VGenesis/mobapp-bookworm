@@ -54,7 +54,7 @@ class _HomepageState extends State<Homepage> {
     "Psychology",
   ];
 
-  static const defparams = {"q": "0", "ebook_access": "public", "limit": "20"};
+  static const defparams = {"q": "0", "ebook_access": "public", "limit": "10"};
   final List<Map<String, String>> categoryParams = [
     {},
     {"sort": "new"},
@@ -150,7 +150,7 @@ class _HomepageState extends State<Homepage> {
               builder: (context, currentTheme, child) => ListTile(
                 title: Container(
                   decoration: BoxDecoration(
-                    color: Color.lerp(Colors.white, currentTheme.theme.colorScheme.primary, 0.5),
+                    color: currentTheme.theme.colorScheme.secondary,
                     borderRadius: BorderRadius.circular(12.0)
                   ),
                   child: Column(
@@ -170,76 +170,78 @@ class _HomepageState extends State<Homepage> {
                         )
                       ),
                   
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 200,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: categoryBooks.length,
-                                itemBuilder: (context, index) {
-                                  BookModel book = categoryBooks[index];
-                                  return GestureDetector(
-                                    onTapUp: (details){
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(builder: 
-                                          (context) => BookPage(book: book)
-                                        )
-                                      );
-                                    },
-                                    child: Container(
-                                      height: 200,
-                                      constraints: const BoxConstraints(maxWidth: 150),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12.0),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: (book.hasImage)
-                                          ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(12.0),
-                                            child: book.image
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 200,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: categoryBooks.length,
+                                  itemBuilder: (context, index) {
+                                    BookModel book = categoryBooks[index];
+                                    return GestureDetector(
+                                      onTapUp: (details){
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(builder: 
+                                            (context) => BookPage(book: book)
                                           )
-                                        
-                                          : Stack(
-                                            alignment: Alignment.center,
-                                              children: [
-                                                book.image,
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.all(8.0),
-                                                      child: Text(
-                                                        book.authorName,
-                                                        maxLines: 2,
-                                                        textAlign: TextAlign.center,
-                                                        style: currentTheme.theme.textTheme.displaySmall,
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.all(8.0),
-                                                      child: Text(
-                                                        book.bookName,
-                                                        maxLines: 2,
-                                                        textAlign: TextAlign.center,
-                                                        style: currentTheme.theme.textTheme.displaySmall,
-                                                      ),
-                                                    )
-                                                  ]
-                                                )
-                                              ],
-                                            )
+                                        );
+                                      },
+                                      child: Container(
+                                        height: 200,
+                                        constraints: const BoxConstraints(maxWidth: 150),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(12.0),
                                         ),
-                                    ),
-                                  );
-                                }
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(right: 8.0, top: 8.0, bottom: 8.0),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            child: (book.hasImage)
+                                              ? book.image
+                                              : Stack(
+                                                alignment: Alignment.center,
+                                                  children: [
+                                                    book.image,
+                                                    Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Text(
+                                                            book.authorName,
+                                                            maxLines: 2,
+                                                            textAlign: TextAlign.center,
+                                                            style: currentTheme.theme.textTheme.displaySmall,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Text(
+                                                            book.bookName,
+                                                            maxLines: 2,
+                                                            textAlign: TextAlign.center,
+                                                            style: currentTheme.theme.textTheme.displaySmall,
+                                                          ),
+                                                        )
+                                                      ]
+                                                    )
+                                                  ],
+                                                ),
+                                          )
+                                          ),
+                                      ),
+                                    );
+                                  }
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),

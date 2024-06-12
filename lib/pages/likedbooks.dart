@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bookworm/models/bookModel.dart';
@@ -34,18 +35,35 @@ class LikedBooks{
       await file.create();
     }
 
-    await file.writeAsString("hello");
+    try{
+      List<Map<String, dynamic>> bookList = [];
+      for(BookModel bookModel in likedBooks){
+        bookList.add(bookModel.toJSON());
+      }
+      String json = jsonEncode(bookList);
+      await file.writeAsString(json);
+      print("Saved $json");
+    } on Exception catch(e) {
+      print(e);
+    }
   }
 
-  static Future<String> loadBooks() async {
+  static Future<void> loadBooks() async {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/likedBooks.json');
     
     try{
-      var json = await file.readAsString();
-      return json;
+      String json = await file.readAsString();
+      print("Loaded $json");
+      final List<dynamic> books = jsonDecode(json);
+      for(Map<String, dynamic> book in books){
+        BookModel? bookModel = BookModel.fromJSON(book);
+        if(bookModel != null){
+          likedBooks.add(bookModel);
+        }
+      }
     } on IOException {
-      return "";
+      return;
     }
   }
 }

@@ -2,7 +2,6 @@ import 'package:bookworm/pages/bookreader.dart';
 import 'package:bookworm/pages/likedbooks.dart';
 import 'package:bookworm/utility/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 import '../models/bookModel.dart';
@@ -47,7 +46,7 @@ class _BookPageState extends State<BookPage> {
           backgroundColor: currentTheme.theme.colorScheme.primary,
         ),
         body: Container(
-          color: currentTheme.theme.colorScheme.onPrimary,
+          color: currentTheme.theme.colorScheme.surface,
           child: Center(
             child: Column(
               children: [
@@ -163,12 +162,12 @@ class _BookPageState extends State<BookPage> {
                         child: Container(
                           padding: const EdgeInsets.all(4.0),
                           decoration: BoxDecoration(
-                            color: currentTheme.theme.colorScheme.onPrimary,
+                            color: currentTheme.theme.colorScheme.primary,
                             borderRadius: BorderRadius.circular(6.0)
                           ),
                           child: Text(
                             widget.book.summary,
-                            style: currentTheme.theme.textTheme.displaySmall
+                            style: currentTheme.theme.textTheme.titleSmall
                           ),
                         ),
                       ),

@@ -1,8 +1,5 @@
 import 'package:bookworm/models/bookModel.dart';
 import 'package:bookworm/utility/searchAPI.dart';
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class ReadableBookModel{
   static const String baseURL = "archive.org/details";
@@ -10,29 +7,6 @@ class ReadableBookModel{
   static const String view = "theater";
   final String archiveID;
   final int pageCount;
-
-  final WebViewController wvcontroller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setBackgroundColor(Colors.black)
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-
-        },
-        onPageStarted: (String url) {},
-        onPageFinished: (String url) {},
-        onHttpError: (HttpResponseError e) {},
-        onWebResourceError: (WebResourceError e) {},
-        onNavigationRequest: (NavigationRequest request) async {
-          if(await canLaunchUrl(Uri.parse(request.url))){
-            await launchUrl(Uri.parse(request.url));
-          }else{
-            throw "Could not launch ${request.url}";
-          }
-          return NavigationDecision.prevent;
-        }
-      )
-    );
 
   ReadableBookModel({
     required this.archiveID,
@@ -58,9 +32,7 @@ class ReadableBookModel{
     }
   }
 
-  Widget build(){
-    String fullURL = "https://$baseURL/$archiveID/mode/$mode?ref=ol&view=$view";
-    wvcontroller.loadRequest(Uri.parse(fullURL));
-    return WebViewWidget(controller: wvcontroller);
+  String getFullUrl(){
+    return "https://$baseURL/$archiveID/mode/$mode?ref=ol&view=$view";
   }
 }

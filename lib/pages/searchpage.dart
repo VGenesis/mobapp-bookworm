@@ -57,7 +57,7 @@ class _SearchPageState extends State<SearchPage> {
       return Consumer<PageTheme>(
         builder: (context, currentTheme, child) => Container(
           decoration: BoxDecoration(
-            color: currentTheme.theme.colorScheme.primary
+            color: currentTheme.theme.colorScheme.onPrimary,
           ),
           child: Stack(
             children: [
@@ -69,7 +69,7 @@ class _SearchPageState extends State<SearchPage> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: currentTheme.theme.colorScheme.secondary
+                      color: currentTheme.theme.colorScheme.primary,
                       ),
                     child: Padding(
                       padding: const EdgeInsets.only(
@@ -101,7 +101,7 @@ class _SearchPageState extends State<SearchPage> {
         
                     Container(
                       decoration: BoxDecoration(
-                        color: currentTheme.theme.colorScheme.secondary,
+                        color: currentTheme.theme.colorScheme.primary,
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(12), 
                           bottomRight: Radius.circular(12)

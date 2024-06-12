@@ -1,3 +1,4 @@
+import 'package:bookworm/pages/likedbooks.dart';
 import 'package:bookworm/utility/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,7 @@ class Mainpage extends StatefulWidget {
     State<Mainpage> createState() => _MainpageState();
 }
 
-class _MainpageState extends State<Mainpage> {
+class _MainpageState extends State<Mainpage> with WidgetsBindingObserver{
   int selectedNavPage = 0;
 
   List<Widget> pages = [
@@ -29,6 +30,28 @@ class _MainpageState extends State<Mainpage> {
   ];
 
   static bool switchDarkTheme = false;
+
+  @override void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LikedBooks.loadBooks();
+  }
+
+  @override void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if(
+      state == AppLifecycleState.detached ||
+      state == AppLifecycleState.inactive
+    ){
+      LikedBooks.saveBooks();
+    }
+  }
+
+  @override void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override Widget build(BuildContext context) {
     return Consumer<PageTheme>(
@@ -58,7 +81,7 @@ class _MainpageState extends State<Mainpage> {
         ),
       
         body: Container(
-          color: currentTheme.theme.colorScheme.onPrimary,
+          color: currentTheme.theme.colorScheme.surface,
           child: pages[selectedNavPage],
         ),
       
