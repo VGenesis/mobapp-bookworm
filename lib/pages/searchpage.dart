@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bookworm/utility/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 enum QueryState{ inactive, started, finished, failed, empty }
+
 
 class SearchPage extends StatefulWidget {
     const SearchPage({super.key});
@@ -33,24 +36,91 @@ class _SearchPageState extends State<SearchPage> {
         "titles", "authors", "genres"
     ];
 
+    Widget loadingIcon(Color color) {
+      return SizedBox(
+        width: 32,
+        height: 32,
+        child: CircularProgressIndicator(
+          strokeWidth: 3.0,
+          color: color,
+        ),
+      );
+    }
 
+    double loadOffset = 0;
+    String searchParam = "";
+
+    bool scrollLoading = false;
     final ScrollController _scrollController = ScrollController();
-    final TextEditingController _controller = TextEditingController();
+    final TextEditingController _textController = TextEditingController();
 
     double searchBarOpacity = 1.0;
 
-    @override
-        void initState(){
-            super.initState();
-            _scrollController.addListener(_onScroll);
-            //searchBarOpacity = true;
-        }
+    void onScrollControllerAttach() async{
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _scrollController.position.isScrollingNotifier.addListener(() async {
+          double maxScroll = _scrollController.position.maxScrollExtent;
+          double currentScroll = _scrollController.position.pixels;
+          double delta = 200;
+          if(maxScroll - currentScroll < delta && !scrollLoading){
+            Map<String, dynamic> params = {
+              parameters[selectedParameter]: searchParam,
+              "offset": bookList.length.toString()
+            };
 
-    @override
-        void dispose() {
-            super.dispose();
-            _scrollController.removeListener(_onScroll);
+            try{
+              setState(() { scrollLoading = true; });
+              var api = SearchAPI();
+              var books = await api.fetchBook(params);
+              if(books["numFound"] == 0) {
+                return;
+              } else {
+                for(var book in books["docs"]){
+                  setState(() {
+                      BookModel? model = BookModel.fromJSON(book);
+                      if(model != null) {
+                      bookList.add(model);
+                      }
+                      scrollLoading = false;
+                      });
+                }
+              }
+            } on SearchAPIException{
+              scrollLoading = false;
+              return;
+            }
+          }
+        });
+      });
+    }
+
+    void onScroll() {
+      final direction = _scrollController.position.userScrollDirection;
+      if(direction == ScrollDirection.forward){
+        setState(() { 
+          searchBarOpacity = min(searchBarOpacity + 0.1, 1.0);
+        });
+      } else if(direction == ScrollDirection.reverse) {
+        setState(() {
+          searchBarOpacity = max(searchBarOpacity - 0.1, 0.0);
+        });
+      } else if(_scrollController.position.isScrollingNotifier.value){
+        if(searchBarOpacity < 0.8) {
+          setState(() { searchBarOpacity = 0.0; });
+        } else {
+          setState(() { searchBarOpacity = 1.0; });
         }
+      }
+    }
+
+    @override void initState(){
+      super.initState();
+    }
+
+    @override void dispose() {
+      super.dispose();
+      _scrollController.position.isScrollingNotifier.removeListener(onScrollControllerAttach);
+    }
 
     @override Widget build(BuildContext context) {
       String searchText = "Search ${parameterNames[selectedParameter]}";
@@ -61,43 +131,42 @@ class _SearchPageState extends State<SearchPage> {
           ),
           child: Stack(
             children: [
-            generateResults(),
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 100),
-              opacity: searchBarOpacity,
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
+              generateResults(),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 100),
+                opacity: searchBarOpacity,
+                child: Column(
+                  children: [
+                    Container(
                       color: currentTheme.theme.colorScheme.primary,
-                      ),
-                    child: Padding(
                       padding: const EdgeInsets.only(
-                        top: 10.0, bottom: 5.0,
+                        top: 10.0, bottom: 5.0,      
                         left: 20.0, right: 20.0
-                        ),
+                      ),
                       child: TextField(
-                        controller: _controller,
-                        onSubmitted: onFormSubmit,
+                        controller: _textController,
+                        onSubmitted: (value) {
+                          bookList.clear();
+                          onFormSubmit(value);
+                        },
                         decoration: InputDecoration(
                           icon: const Icon(Icons.search),
-                          iconColor: currentTheme.theme.colorScheme.onPrimary,
-                          labelText: searchText,
-                          labelStyle: TextStyle(
-                              color: currentTheme.theme.colorScheme.secondary
-                              ),
-                          filled: true,
-                          hoverColor: currentTheme.theme.colorScheme.secondary,
-                          fillColor: currentTheme.theme.colorScheme.onPrimary,
-                          focusColor: currentTheme.theme.colorScheme.secondary
+                            iconColor: currentTheme.theme.colorScheme.onPrimary,
+                            labelText: searchText,
+                            labelStyle: TextStyle(
+                             color: currentTheme.theme.colorScheme.secondary
+                            ),
+                            filled: true,
+                            hoverColor: currentTheme.theme.colorScheme.secondary,
+                            fillColor: currentTheme.theme.colorScheme.onPrimary,
+                            focusColor: currentTheme.theme.colorScheme.secondary
                           ),
-                        style: TextStyle(
-                          color: currentTheme.theme.colorScheme.primary,
-                          fontSize: currentTheme.theme.textTheme.displaySmall!.fontSize
+                          style: TextStyle(
+                            color: currentTheme.theme.colorScheme.primary,
+                            fontSize: currentTheme.theme.textTheme.displaySmall!.fontSize
                           )
                         ),
                       ),
-                    ),
         
                     Container(
                       decoration: BoxDecoration(
@@ -132,23 +201,47 @@ class _SearchPageState extends State<SearchPage> {
             case QueryState.inactive:
               return const Center();
             case QueryState.started:
-              return Expanded(
-                child: Center(
-                  child: Text(
-                    "Searching...",
-                    style: currentTheme.theme.textTheme.displaySmall
+              return Center(
+                child: loadingIcon(currentTheme.theme.colorScheme.primary),
+              );
+            case QueryState.finished:
+              onScrollControllerAttach();
+              return Flex(
+                direction: Axis.vertical,
+                children: [
+                  Expanded (
+                    child: NotificationListener(
+                      onNotification: (t) {
+                        if(
+                          t is ScrollNotification || 
+                          t is ScrollEndNotification
+                        ){
+                          onScroll();
+                        }
+                        return false;
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: bookList.length + 1,
+                        itemBuilder: (context, index) {
+                          return (index < bookList.length)
+                          ? bookList[index].build(context)
+                          : SizedBox(
+                              height: 100,
+                              child: (scrollLoading)
+                              ? Center(
+                                child: loadingIcon(currentTheme.theme.colorScheme.primary),
+                              )
+                              : Container()
+                            );
+                        }
+                      ),
                     ),
                   ),
-                );
-            case QueryState.finished:
-              return Expanded (
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: bookList.length,
-                  itemBuilder: (context, index) => bookList[index].build(context)
-                  ),
-                );
+                ]
+              );
             case QueryState.failed:
+              setState(() { searchBarOpacity = 1.0; });
               return Expanded(
                 child: Center(
                   child: Text(
@@ -158,6 +251,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 );
             case QueryState.empty:
+              setState(() { searchBarOpacity = 1.0; });
               return Center(
                 child: Text(
                   "No books found.",
@@ -193,53 +287,47 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     void onFormSubmit(String param) async{
-        searchBarOpacity = 0.0;
-        if(param.isEmpty) {
-            setState(() { queryState = QueryState.inactive; });
-            return;
-        }
+      setState(() { searchBarOpacity = 0.0; });
+      if(param.isEmpty) {
+          setState(() { queryState = QueryState.inactive; });
+          return;
+      }
 
-        setState(() { queryState = QueryState.started; });
-        Map<String, dynamic> params = {parameters[selectedParameter]: param};
+      setState(() { queryState = QueryState.started; });
+      Map<String, dynamic> params = {
+        parameters[selectedParameter]: param,
+        "offset": bookList.length.toString()
+      };
 
-        try{
-            bookList.clear();
-            var api = SearchAPI();
-            var books = await api.fetchBook(params);
-            if(books["numFound"] == 0) {
-                setState(() { queryState = QueryState.empty; });
-            } else {
-                for(var book in books["docs"]){
-                    setState(() {
-                            BookModel? model = BookModel.fromJSON(book);
-                            if(model != null) {
-                            bookList.add(model);
-                            }
-                            });
-                }
-                setState(() { queryState = QueryState.finished; });
-            }
-        } on SearchAPIException{
-            setState(() { queryState = QueryState.empty; });
+      try{
+        var api = SearchAPI();
+        var books = await api.fetchBook(params);
+        if(books["numFound"] == 0) {
+          setState(() { queryState = QueryState.empty; });
+          return;
+        } else {
+          for(var book in books["docs"]){
+            setState(() {
+              BookModel? model = BookModel.fromJSON(book);
+              if(model != null) {
+                bookList.add(model);
+              }
+              searchParam = param;
+            });
+          }
+          setState(() { queryState = QueryState.finished; });
         }
+      } on SearchAPIException{
+          setState(() { queryState = QueryState.empty; });
+      }
     }
 
     void onSwitchPressed(int switchIndex){
-        setState(() {
-                selectedParameter = switchIndex;
-                for(int i = 0; i < switches.length; i++){
-                switches[i] = (i == switchIndex);
-                }
-                });
-    }
-
-    void _onScroll(){
-        setState(() {
-                if(_scrollController.position.userScrollDirection == ScrollDirection.forward){
-                searchBarOpacity = (searchBarOpacity + 0.1 >= 1.0)? 1.0 : searchBarOpacity + 0.1;
-                } else if(_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
-                searchBarOpacity = (searchBarOpacity - 0.1 <= 0.0)? 0.0 : searchBarOpacity - 0.1;
-                }
-                });
+      setState(() {
+        selectedParameter = switchIndex;
+        for(int i = 0; i < switches.length; i++){
+          switches[i] = (i == switchIndex);
+        }
+      });
     }
 }

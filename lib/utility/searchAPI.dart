@@ -29,6 +29,7 @@ class SearchAPI{
 
   Map<String, dynamic> defparams = {
     "limit": "10",
+    "offset": "0",
     "sort": ""
   };
 

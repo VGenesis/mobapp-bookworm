@@ -1,5 +1,4 @@
 import 'package:bookworm/models/bookModel.dart';
-import 'package:bookworm/pages/bookpage.dart';
 import 'package:bookworm/pages/bookreader.dart';
 import 'package:flutter/material.dart';
 
@@ -19,73 +18,70 @@ class _ProfilePageState extends State<ProfilePage> {
     BookModel book = LikedBooks.get(index);
     showDialog(
       context: context,
-      builder: (context) => SimpleDialog(
-        titlePadding: const EdgeInsets.all(0),
-        title: Opacity(
-          opacity: 0.8,
-          child: Consumer<PageTheme>(
-            builder: (context, currentTheme, child) => Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: currentTheme.theme.colorScheme.tertiary,
-                borderRadius: BorderRadius.circular(12.0)
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "Remove book \"${book.bookName}\"?",
-                    maxLines: 2,
-                    style: currentTheme.theme.textTheme.titleMedium
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: currentTheme.theme.colorScheme.onTertiary,
-                          borderRadius: BorderRadius.circular(8.0)
-                        ),
-                        child: TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(
-                            "No",
-                            style: TextStyle(
-                              color: currentTheme.theme.colorScheme.tertiary,
-                              fontSize: currentTheme.theme.textTheme.titleMedium!.fontSize
-                            )
+      builder: (context) => Consumer<PageTheme>(
+        builder: (context, currentTheme, child) => SimpleDialog(
+          backgroundColor: currentTheme.theme.colorScheme.error,
+          titlePadding: const EdgeInsets.all(4.0),
+          title: Opacity(
+            opacity: 0.8,
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Text(
+                      "Remove book \"${book.bookName}\"?",
+                      maxLines: 2,
+                      style: currentTheme.theme.textTheme.titleMedium
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: currentTheme.theme.colorScheme.onPrimary,
+                            borderRadius: BorderRadius.circular(8.0)
+                          ),
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(
+                              "No",
+                              style: TextStyle(
+                                color: currentTheme.theme.colorScheme.error,
+                                fontSize: currentTheme.theme.textTheme.titleMedium!.fontSize
+                              )
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: currentTheme.theme.colorScheme.onTertiary,
-                          borderRadius: BorderRadius.circular(8.0)
-                        ),
-                        child: TextButton(
-                          onPressed: () {
-                            LikedBooks.removeBook(book);
-                            Navigator.of(context).pop();
-                            setState(() {});
-                          },
-                          child: Text(
-                            "Yes",
-                            style: TextStyle(
-                              color: currentTheme.theme.colorScheme.tertiary,
-                              fontSize: currentTheme.theme.textTheme.titleMedium!.fontSize
-                            )
+                        const SizedBox(width: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: currentTheme.theme.colorScheme.onPrimary,
+                            borderRadius: BorderRadius.circular(8.0)
+                          ),
+                          child: TextButton(
+                            onPressed: () {
+                              LikedBooks.removeBook(book);
+                              Navigator.of(context).pop();
+                              setState(() {});
+                            },
+                            child: Text(
+                              "Yes",
+                              style: TextStyle(
+                                color: currentTheme.theme.colorScheme.error,
+                                fontSize: currentTheme.theme.textTheme.titleMedium!.fontSize
+                              )
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                ],
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      )
-    );
+      );
   }
 
   @override Widget build(BuildContext context) {
@@ -109,7 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       borderRadius: BorderRadius.circular(8.0),
                       child: book.image
                     ),
-                    Flexible(
+                    Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(

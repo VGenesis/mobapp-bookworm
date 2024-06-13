@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bookworm/pages/bookpage.dart';
 import 'package:bookworm/pages/bookreader.dart';
 import 'package:bookworm/utility/searchAPI.dart';
 import 'package:flutter/material.dart';
@@ -45,14 +46,14 @@ class BookModel{
     try{
       var book = BookModel(
         bookName:       json["title"] as String,
-        bookURL:        (json.containsKey("key")) ? json["key"] as String : "",
-        summary:        (json.containsKey("first_sentence")) ? json["first_sentence"][0] as String : "No summary found",
-        authorName:     (json.containsKey("author_name")) ? json["author_name"][0] as String : "Unknown",
-        authorURL:      (json.containsKey("author_key")) ? json["author_key"][0] as String : "Unknown",
-        ebookAccess:    (json.containsKey("ebook_access")) ? json["ebook_access"] as String : "no_ebook",
-        coverEditionKey:(json.containsKey("cover_edition_key")) ? json["cover_edition_key"] : "",
-        oclc: json.containsKey("oclc")? ["oclc"][0] : "",
-        isbn: json.containsKey("isbn")? ["isbn"][0] : "",
+        bookURL:        json.containsKey("key")? json["key"] as String : "",
+        summary:        json.containsKey("first_sentence")? json["first_sentence"][0] as String : "No summary found",
+        authorName:     json.containsKey("author_name")? json["author_name"][0] as String : "Unknown",
+        authorURL:      json.containsKey("author_key")? json["author_key"][0] as String : "Unknown",
+        ebookAccess:    json.containsKey("ebook_access")? json["ebook_access"] as String : "no_ebook",
+        coverEditionKey:json.containsKey("cover_edition_key")? json["cover_edition_key"] : "",
+        oclc:           json.containsKey("oclc")? json["oclc"][0] : "",
+        isbn:           json.containsKey("isbn")? json["isbn"][0] : "",
         ); 
 
       book.fetchCoverImage();
@@ -66,13 +67,13 @@ class BookModel{
     return {
       "title": bookName,
       "key": bookURL,
-      "first_sentence": summary,
-      "author_name": authorName,
-      "author_key": authorURL,
+      "first_sentence": [summary],
+      "author_name": [authorName],
+      "author_key": [authorURL],
       "ebook_access": ebookAccess,
       "cover_edition_key": coverEditionKey,
-      "oclc": jsonEncode([oclc]),
-      "isbn": jsonEncode([isbn])
+      "oclc": [oclc],
+      "isbn": [isbn]
     };
   }
 
@@ -104,7 +105,7 @@ class BookModel{
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookReader(book: this)
+              builder: (context) => BookPage(book: this)
             )
           );
         },

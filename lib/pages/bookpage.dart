@@ -180,10 +180,11 @@ class _BookPageState extends State<BookPage> {
         ),
       
         floatingActionButton: FloatingActionButton(
+          backgroundColor: currentTheme.theme.colorScheme.primary,
           onPressed: toggleLiked,
           child: Icon((liked) 
             ? Icons.favorite
-            : Icons.favorite_outline
+            : Icons.favorite_outline,
           )
         ),
       ),
